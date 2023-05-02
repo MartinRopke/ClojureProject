@@ -1,94 +1,62 @@
 (ns music-api.core
-  (:require [ring.adapter.jetty :as jetty]
-            [ring.middleware.json :as json]
+  (:require [org.httpkit.server :as server]
             [compojure.core :refer :all]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.data.json :as data-json]))
+            [compojure.route :as route]
+            [ring.middleware.defaults :refer :all]
+            [clojure.pprint :as pp]
+            [clojure.string :as str]
+            [clojure.data.json :as json])
+  (:gen-class))
 
-(def db-spec {:classname "org.sqlite.JDBC"
-              :subprotocol "sqlite"
-              :subname "music.db"})
+  ; Simple Body Page
+(defn simple-body-page [req]
+  {:status  200
+   :headers {"Content-Type" "text/html"}
+   :body    "Hello World"})
 
-(defn create-table []
-  (jdbc/execute! db-spec
-                 ["CREATE TABLE IF NOT EXISTS music
-                   (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    title TEXT,
-                    artist TEXT,
-                    album TEXT)"]))
-
-(defn- parse-body [body]
-  (if (empty? body)
-    {}
-    (-> body
-        (data-json/read-str))))
-
-(defn- get-music-by-id [id]
-  (jdbc/query
-   db-spec
-   ["SELECT * FROM music WHERE id = ?" id]
-   {:row-fn :map}))
-
-(defn- get-music-list []
-  (jdbc/query
-   db-spec
-   ["SELECT * FROM music"]
-   {:row-fn :map}))
-
-(defn- insert-music [music]
-  (jdbc/insert!
-   db-spec
-   :music
-   music))
-
-(defn- update-music [id music]
-  (jdbc/update!
-   db-spec
-   :music
-   {:id id}
-   music))
-
-(defn- delete-music [id]
-  (jdbc/delete!
-   db-spec
-   :music
-   {:id id}))
+; request-example
+(defn request-example [req]
+     {:status  200
+      :headers {"Content-Type" "text/html"}
+      :body    (->>
+                (pp/pprint req)
+                (str "Request Object: " req))})
 
 (defroutes app-routes
-  (GET "/music" []
-    (json/response
-     {:status 200
-      :body (get-music-list)}))
+  (GET "/" [] simple-body-page)
+  (GET "/request" [] request-example)
+  (route/not-found "Error, page not found!"))
 
-  (GET "/music/:id" [id]
-    (json/response
-     {:status 200
-      :body (get-music-by-id id)}))
+;;   (GET "/music/:id" [id]
+;;     (json/response
+;;      {:status 200
+;;       :body (get-music-by-id id)}))
 
-  (POST "/music" {body :body}
-    (let [music (parse-body body)]
-      (insert-music music)
-      (json/response
-       {:status 201
-        :body music})))
+;;   (POST "/music" {body :body}
+;;     (let [music (parse-body body)]
+;;       (insert-music music)
+;;       (json/response
+;;        {:status 201
+;;         :body music})))
 
-  (PUT "/music/:id" [id body]
-    (let [music (parse-body body)]
-      (update-music id music)
-      (json/response
-       {:status 200
-        :body music})))
+;;   (PUT "/music/:id" [id body]
+;;     (let [music (parse-body body)]
+;;       (update-music id music)
+;;       (json/response
+;;        {:status 200
+;;         :body music})))
 
-  (DELETE "/music/:id" [id]
-    (delete-music id)
-    (json/response
-     {:status 204})))
+;;   (DELETE "/music/:id" [id]
+;;     (delete-music id)
+;;     (json/response
+;;      {:status 204})))
 
-(def app
-  (-> app-routes
-      (json/wrap-json-body)
-      (json/wrap-json-response)))
-
-(defn -main []
-  (create-table)
-  (jetty/run-jetty app {:port 3000}))
+  (defn -main
+  "This is our main entry point"
+  [& args]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+    ; Run the server with Ring.defaults middleware
+    (server/run-server (wrap-defaults #'app-routes site-defaults) {:port port})
+    ; Run the server without ring defaults
+    ;(server/run-server #'app-routes {:port port})
+    (println (str "Running webserver at http:/127.0.0.1:" port "/"))))
