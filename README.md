@@ -6,10 +6,11 @@ A Clojure program designed to be an API with CRUD routes for musics
 
 Open the terminal in the root directory
 
-To make the Leiningen framework installation
-Run:
+To make the Leiningen framework installation run:
+```
     lein self-install
-
-To run the server app
-Run:
+```
+To run the server app run:
+```
     lein run
+```
