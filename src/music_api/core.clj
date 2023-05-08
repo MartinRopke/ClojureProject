@@ -1,3 +1,5 @@
+
+;; ======= HTTP SERVER / MONGO SETUP ============
 (ns music-api.core
   (:require [org.httpkit.server :as server]
             [compojure.core :refer :all]
@@ -6,15 +8,34 @@
             [ring.middleware.json :as mj]
             [clojure.pprint :as pp]
             [clojure.string :as str]
-            [clojure.data.json :as json])
+            [clojure.data.json :as json]
+            [monger.core :as mg]
+            [monger.collection :as mc])
+  (:import [com.mongodb MongoOptions ServerAddress])
   (:gen-class))
+
+;; given host, given port
+(let [conn (mg/connect {:host "localhost" :port 27017})])
+
+(let [conn (mg/connect)
+      db   (mg/get-db conn "monger-test")])
+
+(let [conn (mg/connect)
+      db   (mg/get-db conn "monger-test")
+      coll "documents"]
+  (println (mc/find-maps db "documents")))
+
+;; ===========================
+
+
+;; ======= ROUTES ============
 
 (defn get-all-musics [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
    :body (->>
            (pp/pprint req)
-           (str "Get all musics - Request object: " req))})
+           (str "Get all musics - Request object: "))})
 
 (defn get-music-by-id [req]
   {:status  200

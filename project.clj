@@ -9,6 +9,7 @@
                  [ring/ring-defaults "0.3.2"]
                  ; Clojure data.JSON library
                  [org.clojure/data.json "0.2.6"]
-                 [ring/ring-json "0.5.0"]] 
+                 [ring/ring-json "0.5.0"]
+                 [com.novemberain/monger "3.6.0"]] 
   :main ^:skip-aot music-api.core
   :repl-options {:init-ns music-api.core})

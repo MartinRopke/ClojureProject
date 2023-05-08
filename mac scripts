@@ -1,0 +1,1 @@
+clj -Sdeps '{:deps {com.novemberain/monger {:mvn/version "3.6.0"}}}' -M mongo.clj
