@@ -51,31 +51,25 @@
 ;; Create collection
 ;; (mc/create db "musics")
 ;; Insert musics
-(mc/insert db "musics" {:title "Music 1" :artist "Artist 1" :year 1999 :genre "Genre 1" :rating 5})
-(mc/insert db "musics" {:title "Music 2" :artist "Artist 2" :year 1999 :genre "Genre 2" :rating 5})
-(mc/insert db "musics" {:title "Music 3" :artist "Artist 3" :year 1999 :genre "Genre 3" :rating 5})
-(mc/insert db "musics" {:title "Music 4" :artist "Artist 4" :year 1999 :genre "Genre 4" :rating 5})
-(mc/insert db "musics" {:title "Music 5" :artist "Artist 5" :year 1999 :genre "Genre 5" :rating 5})
-(mc/insert db "musics" {:title "Music 6" :artist "Artist 6" :year 1999 :genre "Genre 6" :rating 5})
+(mc/insert db "musics" {:id 1 :title "Music 1" :artist "Artist 1" :year 1999 :genre "Genre 1" :rating 5})
+(mc/insert db "musics" {:id 2 :title "Music 2" :artist "Artist 2" :year 1999 :genre "Genre 2" :rating 5})
+(mc/insert db "musics" {:id 3 :title "Music 3" :artist "Artist 3" :year 1999 :genre "Genre 3" :rating 5})
+(mc/insert db "musics" {:id 4 :title "Music 4" :artist "Artist 4" :year 1999 :genre "Genre 4" :rating 5})
+(mc/insert db "musics" {:id 5 :title "Music 5" :artist "Artist 5" :year 1999 :genre "Genre 5" :rating 5})
+(mc/insert db "musics" {:id 6 :title "Music 6" :artist "Artist 6" :year 1999 :genre "Genre 6" :rating 5})
 
+
+;; get music by name
+;; (println (mc/find-maps db "musics" {:title "Music 1"}))
 
 (println "\n\n ========================== \n\n")
 
 ;; ======= ROUTES ============
 
+(defn parse-music [music] (select-keys music [:id :title :artist :year :genre :rating]))
 
-;; (defn get-docs [] 
-;;   (let [conn (mg/connect)
-;;         db   (mg/get-db conn "monger-test")
-;;         coll "documents"]
-;;     (mc/find-maps db "documents")))  
-  
+(defn parse-musics [musics] (for [m musics] (parse-music m) ))
 
-;; (defn hello-world[req]
-;;   {:status  200
-;;    :headers {"Content-Type" "application/json"}
-;;    :body ( for [d (get-docs)] (select-keys d [:first_name :last_name]))
-;;   })
 
 (defn hello-world [req]
   {:status  200
@@ -87,14 +81,15 @@
 (defn get-all-musics [req]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body (mc/find-maps db "musics")})
+   :body (parse-musics (mc/find-maps db "musics"))})
 
 (defn get-music-by-id [req]
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-Type" "application/json"}
    :body (let [id (:id (:params req))]
            (pp/pprint id)
-           (str "Get music by id - Request Id: " id))
+           (pp/pprint (parse-music (first (mc/find-maps db "musics" {:id (Integer/parseInt id)}))))
+           (parse-music (first (mc/find-maps db "musics" {:id (Integer/parseInt id)}))))
    })
 
 (defn add-music [req]
@@ -123,8 +118,8 @@
 
 (defroutes app-routes
   (GET "/" [] (mj/wrap-json-response hello-world))
-  (GET "/music" [] (mj/wrap-json-body get-all-musics))
-  (GET "/music/:id" [] get-music-by-id)
+  (GET "/music" [] (mj/wrap-json-response get-all-musics))
+  (GET "/music/:id" [] (mj/wrap-json-response get-music-by-id))
   (POST "/music" [] (mj/wrap-json-body add-music))
   (PUT "/music" [] (mj/wrap-json-body update-music))
   (DELETE "/music/:id" [] delete-music-by-id)
