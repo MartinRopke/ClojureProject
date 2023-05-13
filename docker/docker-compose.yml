@@ -6,5 +6,10 @@ services:
       - '27017:27017'
     volumes:
       - dbdata6:/data/db
+  clojure:
+    build: ..
+    ports: 
+      - '3000:3000'
+    command: "lein run"
 volumes:
   dbdata6:

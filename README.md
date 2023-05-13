@@ -15,6 +15,6 @@ To run the server app run:
 lein run
 ```
 
-## Setup Mongo via docker
+## Setup via Docker
     cd docker
     docker-compose up

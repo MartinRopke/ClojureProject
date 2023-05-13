@@ -36,14 +36,9 @@
 (println "\n\n ======= REBUILD DATABASE ============ \n\n")
 
 ;; given host, given port
-(def conn (mg/connect {:host "localhost" :port 27017}))
+(def conn (mg/connect {:host "mongodb" :port 27017}))
 (def db (mg/get-db conn "monger-test"))
 
-
-(let [conn (mg/connect)
-      db   (mg/get-db conn "monger-test")])
-
-(println (mc/find-maps db "documents"))
 
 ;; Drop database
 (mdb/drop-db db)
