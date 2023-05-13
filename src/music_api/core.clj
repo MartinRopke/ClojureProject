@@ -106,6 +106,7 @@
    :headers {"Content-Type" "application/json"}
    :body (let [body (:body req)]
            (pp/pprint body)
+           (mc/update db "musics" {:id (:id body)} (parse-music body))
            (str "Update music - Request body: " body))
    })
 
