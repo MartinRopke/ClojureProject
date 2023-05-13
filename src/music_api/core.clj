@@ -94,15 +94,16 @@
 
 (defn add-music [req]
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-Type" "application/json"}
    :body (let [body (:body req)]
-           (pp/pprint body)
+           (pp/pprint (parse-music body))
+           (mc/insert db "musics" (parse-music body))
            (str "Add music - Request body: " body))
    })
 
 (defn update-music [req]
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-Type" "application/json"}
    :body (let [body (:body req)]
            (pp/pprint body)
            (str "Update music - Request body: " body))
@@ -110,7 +111,7 @@
 
 (defn delete-music-by-id [req]
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-Type" "application/json"}
    :body (let [id (:id (:params req))]
            (pp/pprint id)
            (str "Delte music by id - Request Id: " id))
@@ -120,8 +121,8 @@
   (GET "/" [] (mj/wrap-json-response hello-world))
   (GET "/music" [] (mj/wrap-json-response get-all-musics))
   (GET "/music/:id" [] (mj/wrap-json-response get-music-by-id))
-  (POST "/music" [] (mj/wrap-json-body add-music))
-  (PUT "/music" [] (mj/wrap-json-body update-music))
+  (POST "/music" [] (mj/wrap-json-body add-music {:keywords? true}))
+  (PUT "/music" [] (mj/wrap-json-body update-music {:keywords? true}))
   (DELETE "/music/:id" [] delete-music-by-id)
   (route/not-found "Error, page not found!"))
 
