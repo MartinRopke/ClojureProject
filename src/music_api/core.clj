@@ -10,32 +10,84 @@
             [clojure.string :as str]
             [clojure.data.json :as json]
             [monger.core :as mg]
-            [monger.collection :as mc])
+            [monger.collection :as mc]
+            [monger.db :as mdb])
   (:import [com.mongodb MongoOptions ServerAddress])
   (:gen-class))
 
+;; ===========================
+
+;; ======= MUSIC SCHEMA ============
+
+
+;; music {
+;;   id: 1,
+;;   title: "The title of the music",
+;;   artist: "The artist of the music",
+;;   year: 1999,
+;;   genre: "The genre of the music",
+;;   rating: 5
+;; }
+
+;; ===========================
+
+;; ======= REBUILD DATABASE ============
+
+(println "\n\n ======= REBUILD DATABASE ============ \n\n")
+
 ;; given host, given port
-(let [conn (mg/connect {:host "localhost" :port 27017})])
+(def conn (mg/connect {:host "localhost" :port 27017}))
+(def db (mg/get-db conn "monger-test"))
+
 
 (let [conn (mg/connect)
       db   (mg/get-db conn "monger-test")])
 
-(let [conn (mg/connect)
-      db   (mg/get-db conn "monger-test")
-      coll "documents"]
-  (println (mc/find-maps db "documents")))
+(println (mc/find-maps db "documents"))
 
-;; ===========================
+;; Drop database
+(mdb/drop-db db)
 
+;; Create collection
+;; (mc/create db "musics")
+;; Insert musics
+(mc/insert db "musics" {:title "Music 1" :artist "Artist 1" :year 1999 :genre "Genre 1" :rating 5})
+(mc/insert db "musics" {:title "Music 2" :artist "Artist 2" :year 1999 :genre "Genre 2" :rating 5})
+(mc/insert db "musics" {:title "Music 3" :artist "Artist 3" :year 1999 :genre "Genre 3" :rating 5})
+(mc/insert db "musics" {:title "Music 4" :artist "Artist 4" :year 1999 :genre "Genre 4" :rating 5})
+(mc/insert db "musics" {:title "Music 5" :artist "Artist 5" :year 1999 :genre "Genre 5" :rating 5})
+(mc/insert db "musics" {:title "Music 6" :artist "Artist 6" :year 1999 :genre "Genre 6" :rating 5})
+
+
+(println "\n\n ========================== \n\n")
 
 ;; ======= ROUTES ============
 
-(defn get-all-musics [req]
+
+;; (defn get-docs [] 
+;;   (let [conn (mg/connect)
+;;         db   (mg/get-db conn "monger-test")
+;;         coll "documents"]
+;;     (mc/find-maps db "documents")))  
+  
+
+;; (defn hello-world[req]
+;;   {:status  200
+;;    :headers {"Content-Type" "application/json"}
+;;    :body ( for [d (get-docs)] (select-keys d [:first_name :last_name]))
+;;   })
+
+(defn hello-world [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
    :body (->>
            (pp/pprint req)
-           (str "Get all musics - Request object: "))})
+           (str "Hello!!"))})
+
+(defn get-all-musics [req]
+  {:status  200
+   :headers {"Content-Type" "application/json"}
+   :body (mc/find-maps db "musics")})
 
 (defn get-music-by-id [req]
   {:status  200
@@ -70,7 +122,8 @@
    })
 
 (defroutes app-routes
-  (GET "/music" [] get-all-musics)
+  (GET "/" [] (mj/wrap-json-response hello-world))
+  (GET "/music" [] (mj/wrap-json-body get-all-musics))
   (GET "/music/:id" [] get-music-by-id)
   (POST "/music" [] (mj/wrap-json-body add-music))
   (PUT "/music" [] (mj/wrap-json-body update-music))
