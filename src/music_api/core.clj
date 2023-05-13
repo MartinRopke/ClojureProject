@@ -115,6 +115,7 @@
    :headers {"Content-Type" "application/json"}
    :body (let [id (:id (:params req))]
            (pp/pprint id)
+           (mc/remove db "musics" {:id (Integer/parseInt id)})
            (str "Delte music by id - Request Id: " id))
    })
 
